@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #customerList {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label for="loginEmail">Email:</label>
+    <input type="text" id="loginEmail" name="loginEmail" required>
+    <br>
+    <label for="loginPassword">Password:</label>
+    <input type="password" id="loginPassword" name="loginPassword" required>
+    <br>
+    <button type="button" onclick="authenticate()">Login</button>
+  </form>
+
+  <h2>Create Customer</h2>
+  <form id="createCustomerForm">
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" name="firstName" required>
+    <br>
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" name="lastName" required>
+    <br>
+    <!-- Add other customer creation fields here -->
+    <button type="button" onclick="createCustomer()">Create Customer</button>
+  </form>
+
+  <h2>Customer List</h2>
+  <button type="button" onclick="getCustomerList()">Get Customer List</button>
+  <div id="customerList"></div>
+
+  <h2>Delete Customer</h2>
+  <form id="deleteCustomerForm">
+    <label for="deleteUUID">Customer UUID:</label>
+    <input type="text" id="deleteUUID" name="deleteUUID" required>
+    <br>
+    <button type="button" onclick="deleteCustomer()">Delete Customer</button>
+  </form>
+
+  <h2>Update Customer</h2>
+  <form id="updateCustomerForm">
+    <label for="updateUUID">Customer UUID:</label>
+    <input type="text" id="updateUUID" name="updateUUID" required>
+    <br>
+    <label for="updateFirstName">First Name:</label>
+    <input type="text" id="updateFirstName" name="updateFirstName" required>
+    <br>
+    <label for="updateLastName">Last Name:</label>
+    <input type="text" id="updateLastName" name="updateLastName" required>
+    <br>
+    <!-- Add other customer update fields here -->
+    <button type="button" onclick="updateCustomer()">Update Customer</button>
+  </form>
+
+  <script>
+    let token = null;
+
+    function authenticate() {
+      const loginEmail = document.getElementById("loginEmail").value;
+      const loginPassword = document.getElementById("loginPassword").value;
+
+      // Perform authentication API call and store the token
+      // Use a library like fetch or axios for AJAX requests
+      // Replace the API endpoint with your actual endpoint
+      fetch('https://qa2.sunbasedata.com/sunbase/portal/api/assignment_auth.jsp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          login_id: loginEmail,
+          password: loginPassword
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Authentication failed with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        token = data.token;
+        alert("Authentication successful. Token received!");
+      })
+      .catch(error => alert(`Authentication failed: ${error.message}`));
+    }
+
+    function createCustomer() {
+      const firstName = document.getElementById("firstName").value;
+      const lastName = document.getElementById("lastName").value;
+
+      // Perform create customer API call using the obtained token
+      // Replace the API endpoint with your actual endpoint
+      fetch('https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          // Add other customer creation fields here
+        })
+      })
+      .then(response => handleApiResponse(response, 'Customer created successfully'))
+      .catch(error => alert(`Create customer failed: ${error.message}`));
+    }
+
+    function getCustomerList() {
+      // Perform get customer list API call using the obtained token
+      // Replace the API endpoint with your actual endpoint
+      fetch('https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => handleApiResponse(response, 'Customer list retrieved successfully'))
+      .catch(error => alert(`Get customer list failed: ${error.message}`));
+    }
+
+    function deleteCustomer() {
+      const deleteUUID = document.getElementById("deleteUUID").value;
+
+      // Perform delete customer API call using the obtained token
+      // Replace the API endpoint with your actual endpoint
+      fetch(`https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=delete&uuid=${deleteUUID}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => handleApiResponse(response, 'Customer deleted successfully'))
+      .catch(error => alert(`Delete customer failed: ${error.message}`));
+    }
+
+    function updateCustomer() {
+      const updateUUID = document.getElementById("updateUUID").value;
+      const updateFirstName = document.getElementById("updateFirstName").value;
+      const updateLastName = document.getElementById("updateLastName").value;
+
+      // Perform update customer API call using the obtained token
+      // Replace the API endpoint with your actual endpoint
+      fetch(`https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=update&uuid=${updateUUID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          first_name: updateFirstName,
+          last_name: updateLastName,
+          // Add other customer update fields here
+        })
+      })
+      .then(response => handleApiResponse(response, 'Customer updated successfully'))
+      .catch(error => alert(`Update customer failed: ${error.message}`));
+    }
+
+    function handleApiResponse(response, successMessage) {
+      if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`);
+      }
+      alert(successMessage);
+    }
+  </script>
+
+
+</body>
+</html>
